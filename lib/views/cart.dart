@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import './homepage.dart';
 
 class Cart extends StatelessWidget {
   const Cart({Key? key}) : super(key: key);
@@ -23,7 +22,7 @@ class Cart extends StatelessWidget {
                 child: Text('Back to store')),
             ElevatedButton(
                 onPressed: () {
-                  Get.offAll(() => HomePage());
+                  Get.offAllNamed('/homepage', arguments: {'Slava!'});
                 },
                 child: Text('Back Home'))
           ],

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import '../controllers/homeController.dart';
 import 'package:get/get.dart';
-import './cart.dart';
 
 class Shop extends StatelessWidget {
-  const Shop({Key? key}) : super(key: key);
+  HomePageController home = Get.find<HomePageController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Shop'),
+        title: Text('Shop ${home.status}'),
       ),
       body: Center(
         child: Column(
@@ -19,14 +19,17 @@ class Shop extends StatelessWidget {
             Container(
               child: Text('My name is ... ${Get.arguments["name"]}'),
             ),
+            Container(
+              child: Text('Selected Product ${Get.parameters["prodID"]}'),
+            ),
             ElevatedButton(
                 onPressed: () {
-                  Get.back(result: '200');
+                  Get.offNamed('/homepage');
                 },
                 child: Text('Go Back')),
             ElevatedButton(
                 onPressed: () {
-                  Get.to(() => Cart());
+                  Get.toNamed('/cart');
                 },
                 child: Text('Open Cart'))
           ],

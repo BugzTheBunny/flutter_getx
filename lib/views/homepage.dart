@@ -26,12 +26,10 @@ class HomePage extends StatelessWidget {
                   Get.toNamed('/store/MacBook', arguments: {'name': 'Slava'});
                 },
                 child: Text('Show Macbook!')),
-            GetBuilder<HomePageController>(
-                id: "status_widget",
-                builder: (_) {
-                  print('STATUS REBUILD');
-                  return Text("User Status :${homepageController.status}");
-                }),
+            Obx(() {
+              print('STATUS REBUILD');
+              return Text("User Status :${homepageController.status.value}");
+            }),
             ElevatedButton(
                 onPressed: () {
                   homepageController.updateStatus("Online!");
@@ -42,12 +40,10 @@ class HomePage extends StatelessWidget {
                   homepageController.updateStatus("Offline!");
                 },
                 child: Text('Log Out')),
-            GetBuilder<HomePageController>(
-                id: 'userscount_widget',
-                builder: (_) {
-                  print('USERS REBUILD');
-                  return Text("Users Count :${homepageController.usersCount}");
-                }),
+            Obx(() {
+              return Text(
+                  "Users Count :${homepageController.usersCount.value}");
+            }),
             ElevatedButton(
                 onPressed: () {
                   homepageController.addUsers();

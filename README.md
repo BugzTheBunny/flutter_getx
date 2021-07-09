@@ -563,3 +563,103 @@ GetBuilder<HomePageController>(builder: (_) {
   }
 ```
 - Now you have a button, which will only update the user count, note it that will not affect the status, and same goes the other way around.
+
+---
+## 5. **GetX approach [.obs]**
+- To make everything more reactive, we can use the GetX approach.
+  - we chage the `status` into a and observeble for the GetX widget.
+  - we remove the update, because getx knows how to do it by itself.
+  - Notice that we added `.obs` to the initialization value, and we changed it to var, and `.value` to the changing method.
+
+
+**homeController.dart**
+```
+import 'package:get/get.dart';
+
+class HomePageController extends GetxController {
+  var status = 'Unknown'.obs;
+  int usersCount = 10;
+
+  void updateStatus(newStatus) {
+    status.value = newStatus;
+  }
+
+  void addUsers() {
+    usersCount += 1;
+    update(['userscount_widget']);
+  }
+}
+
+```
+- On the `homepage.dart` we replace the old `GetBuilder` with `GetX` widget.
+- it looks almost much the same, but as you can see it has less code.
+```
+GetX<HomePageController>(builder: (_) {
+              print('STATUS REBUILD');
+              return Text("User Status :${homepageController.status}");
+            }),
+```
+- Now the application will work in the same way, but with even less code.
+---
+## 6. **Obx approach [.obs]**
+- Now, can we make it even shorter and easier to implement? **YES WE CAN!**
+- using the Obx class/widget.
+  - in this part, we only change the widget in the `homepage.dart`
+```
+ Obx(() {
+    print('STATUS REBUILD');
+    return Text("User Status :${homepageController.status.value}");
+  }),
+```
+- Yup.. that pretty much it, now it has even less code, and it looks cleaner.
+---
+## 6. **Getx Workers**
+- GetX workers are callbacks that are performed on certein events.
+
+1. `ever(listener,(_){})`
+  - The ever listener will accure everytime we call change variable/observable.
+  - We override the `OnInit()` function inside `HomePageController`.
+  ```
+  @override
+  void onInit() {
+    ever(status, (_) {
+      print('This will run everything we call the variable!');
+    });
+    super.onInit();
+  }
+  ```
+  - If we want another one of these, we can just add, for example for the user count.
+  -**NOTE** - you need to change the rest of the items in the app for the users count to make it work.
+    - set the initialization as needed and turn the value into obs.
+    - change the class in the homepage to Obx.
+  ```
+  @override
+  void onInit() {
+    ever(status, (_) {
+      print('This will run everything we call the variable!');
+    });
+
+    ever(usersCount, (_) {
+      print('The users count was updated.');
+    });
+    super.onInit();
+  }
+  ```
+
+  - **OR** we can use `everAll()`, which listens to both of the parameters:
+  - `everAll([status, usersCount], (_) => print('Something is updated..!'));` 
+    - *Note im using the short syntax, but the normal one also works here ofcourse*
+    - Everytime one of the parameters changes, this will be called.
+- If we want something that will be called only onces, we can use... `once()`
+  ```
+  once(usersCount, (_) {
+    print('This will be called one time only!');
+  });
+  ```
+- Another cool worker is `debounce()`, it will do something, after `N` time that the value was not changed.
+  - Press the add users, wait for 2 seconds, and you will see the print.
+```
+  debounce(usersCount, (number) {
+    print(number);
+  }, time: Duration(seconds: 2));
+```

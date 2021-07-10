@@ -3,8 +3,11 @@ import 'package:get/get.dart';
 import './views/homepage.dart';
 import './views/shop.dart';
 import './views/cart.dart';
+import 'bindings/homeBindings.dart';
+import 'package:get_storage/get_storage.dart';
 
-void main() {
+void main() async {
+  await GetStorage.init();
   runApp(MyApp());
 }
 
@@ -22,9 +25,7 @@ class MyApp extends StatelessWidget {
           page: () => Shop(),
         ),
         GetPage(
-          name: '/homepage',
-          page: () => HomePage(),
-        ),
+            name: '/homepage', page: () => HomePage(), binding: HomeBinding()),
         GetPage(
           name: '/cart',
           page: () => Cart(),

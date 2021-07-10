@@ -9,7 +9,7 @@ class Shop extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Shop ${home.status}'),
+        title: Text('Shop'),
       ),
       body: Center(
         child: Column(

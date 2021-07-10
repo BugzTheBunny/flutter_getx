@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:getx_demo/controllers/homeController.dart';
 
-class Cart extends StatelessWidget {
-  const Cart({Key? key}) : super(key: key);
-
+class Cart extends GetWidget<HomePageController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

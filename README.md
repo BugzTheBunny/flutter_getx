@@ -2,6 +2,8 @@
 
 [GetX](https://pub.dev/packages/get)
 
+Some more intresting things:
+- [SmartManagement](https://pub.dev/documentation/get/latest/get_core_src_smart_management/SmartManagement-class.html)
 
 # **Navigation**
 ----
@@ -613,7 +615,7 @@ GetX<HomePageController>(builder: (_) {
 ```
 - Yup.. that pretty much it, now it has even less code, and it looks cleaner.
 ---
-## 6. **Getx Workers**
+## 7. **Getx Workers**
 - GetX workers are callbacks that are performed on certein events.
 
 1. `ever(listener,(_){})`
@@ -663,3 +665,250 @@ GetX<HomePageController>(builder: (_) {
     print(number);
   }, time: Duration(seconds: 2));
 ```
+
+# **Dependancy Injection.**
+---
+## 1. **Few words about Dependancy Injection**
+- The normal way to transefr Widgets and their data while using Flutter, is a headeach, you need to transfer them level by level, from the root to the buttom, even when sometimes we don't actually use them inside of the layers in the way.
+
+- But with git, when using for example `Get.put(HomePageController());` we are actually getting the option to use the items where ever we want.
+
+- Problem? - When the place where this is declared is getting removed from the navigation stack, the Injection will also be removed.
+
+- Solution? - We can make it permanent, meaning make it stay in memmory usign the permanent property.
+  - `Get.put(HomePageController(), permanent: true);`
+  - now we can use it anywhere, even if the widget in which we initialize it, is removed from the stack.
+---
+## 2. **Bindings, Lazy , GetWidget**, A better way!
+- Instead of declearing what we want to use everywhere, we can just declear them in one place, and use them.
+
+- Create a folder `bindings`, and create `homeBindings.dart`
+- Note, instead of `lazyPut`, we can indeed use `put`, but if we do so, it will be initialized right when the app starts, if we use lazy, it will start only when called.
+- note the `fenix` parameter, when we use bindings, the Widget gets destroyed in the background verytime, so when we use `fenix`, the exact same value will be returned everytime, on a high level, imagine that it wont be destroyed.
+```
+import 'package:get/get.dart';
+import '../controllers/homeController.dart';
+
+class HomeBinding implements Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut(() => HomePageController(), fenix: true);
+  }
+}
+
+```
+
+- in the `main.dart` file, we add binding to the route.
+`GetPage(name: '/homepage', page: () => HomePage(), binding: HomeBinding()),`
+- in `homepage.dart` we remove eveything we don't need, and refactor the code a bit.
+  - we removed the imports we dont need.
+  - we change the extension of the Widget
+    - `class HomePage extends GetWidget<HomePageController>`
+  - we removed the initialization of the controller.
+  - we refactor all of the usage of the controller.
+- As you can see, now the code is more clear, and has less code, but everything works the same, we can do the same thing in the `cart.dart`, and it will wrok the same.
+```
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:getx_demo/controllers/homeController.dart';
+
+class HomePage extends GetWidget<HomePageController> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Hello!'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () async {
+                  String status =
+                      await Get.toNamed('/store', arguments: {'name': 'Slava'});
+                },
+                child: Text('Go to Store!')),
+            ElevatedButton(
+                onPressed: () async {
+                  Get.toNamed('/store/MacBook', arguments: {'name': 'Slava'});
+                },
+                child: Text('Show Macbook!')),
+            Obx(() {
+              print('STATUS REBUILD');
+              return Text("User Status :${controller.status.value}");
+            }),
+            ElevatedButton(
+                onPressed: () {
+                  controller.updateStatus("Online!");
+                },
+                child: Text('Login In')),
+            ElevatedButton(
+                onPressed: () {
+                  controller.updateStatus("Offline!");
+                },
+                child: Text('Log Out')),
+            Obx(() {
+              return Text("Users Count :${controller.usersCount.value}");
+            }),
+            ElevatedButton(
+                onPressed: () {
+                  controller.addUsers();
+                },
+                child: Text('Add Users')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+```
+
+# **GetStorage**
+*A fast, extra light and synchronous key-value in memory, which backs up data to disk at each operation. It is written entirely in Dart and easily integrates with Get framework of Flutter.*
+
+TL;DR : it allows you to use internal data, some sort of ENV variables, and to rewrite them, get them, and change them.
+
+Usage example: You can store email & password of a user, after the initial login, after that, he wont need to log in again, because we can read the data about him.
+
+---
+## 1. **Install and Init**
+- **How to install**:
+  - First, we add it to the dependancies in pubspec.
+  - Then we run `flutter packages get`
+- **How to init the GetStorage**:
+   ```
+  import 'package:get_storage/get_storage.dart';
+
+  void main() async {
+    await GetStorage.init();
+    runApp(MyApp());
+  }
+   ```
+---
+## 2. **Using the storage**
+- Add initialization of the storage in `homepage.dart`
+```
+...
+class HomePage extends GetWidget<HomePageController> {
+  final storage = GetStorage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+...
+```
+- Remove everything we had in the homepage children.
+- Add a TextField.
+- Add 2 buttons.
+- Add a snackbar.
+- Add a TextController.
+
+```
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:getx_demo/controllers/homeController.dart';
+
+class HomePage extends GetWidget<HomePageController> {
+  final storage = GetStorage();
+  TextEditingController emailController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Hello!'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(25.0),
+              child: TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(hintText: 'Email Address')),
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.05,
+              width: MediaQuery.of(context).size.width * 0.3,
+              child: ElevatedButton(
+                  onPressed: () {
+                    if (GetUtils.isEmail(emailController.text)) {
+                      storage.write('email', emailController.text);
+                      emailController.text = '';
+                    } else {
+                      Get.snackbar(
+                          'Something went wrong..', 'Enter a valid email',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.yellow);
+                    }
+                  },
+                  child: Text('Add Users')),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.05,
+              width: MediaQuery.of(context).size.width * 0.3,
+              child: ElevatedButton(onPressed: () {}, child: Text('View')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+---
+## 3. **Making it work the GetX way**
+- Before we continue, remove everything from that app that is connected to the users count, or the status.
+- clean the homepage controller, and replace it with
+```
+import 'package:get/get.dart';
+
+class HomePageController extends GetxController {
+  var email = ''.obs;
+
+  void updateEmail(newEmail) {
+    email.value = newEmail;
+  }
+}
+```
+
+- on `homepage.dart`:
+```
+SizedBox(
+    height: MediaQuery.of(context).size.height * 0.05,
+    width: MediaQuery.of(context).size.width * 0.3,
+    child: ElevatedButton(
+        onPressed: () {
+          controller.updateEmail("${storage.read('email')}");
+        },
+        child: Text('View')),
+  ),
+  Obx(() {
+    return Text('Email Address: ${controller.email.value}');
+  })
+```
+
+- now the mail that you will input, will be saved in the internal storage.
+- when you will press the "view" button, the homeController will activate the update email, which will update the email variable, with the variable, that we use `storage.read('email')` to get, meaning we will get the internal `email` variable, meaning, that even if you rebuild the app, you can access this variable, because its saved inside the app.
+
+- `Last notes`:
+  - You can listen you changes in the values with:
+    ```
+    storage.listnKey("email",(_){
+      print('Email changed');
+    });
+    ```
+  - You can remove keys with the usage of:
+  ```
+  storage.remove(key);
+  ```
+  

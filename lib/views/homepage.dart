@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import '../controllers/homeController.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:getx_demo/controllers/homeController.dart';
 
-class HomePage extends StatelessWidget {
-  final HomePageController homepageController = Get.put(HomePageController());
+class HomePage extends GetWidget<HomePageController> {
+  final storage = GetStorage();
+  TextEditingController emailController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,40 +18,44 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ElevatedButton(
-                onPressed: () async {
-                  String status =
-                      await Get.toNamed('/store', arguments: {'name': 'Slava'});
-                },
-                child: Text('Go to Store!')),
-            ElevatedButton(
-                onPressed: () async {
-                  Get.toNamed('/store/MacBook', arguments: {'name': 'Slava'});
-                },
-                child: Text('Show Macbook!')),
+            Padding(
+              padding: EdgeInsets.all(25.0),
+              child: TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(hintText: 'Email Address')),
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.05,
+              width: MediaQuery.of(context).size.width * 0.3,
+              child: ElevatedButton(
+                  onPressed: () {
+                    if (GetUtils.isEmail(emailController.text)) {
+                      storage.write('email', emailController.text);
+                      emailController.text = '';
+                    } else {
+                      Get.snackbar(
+                          'Something went wrong..', 'Enter a valid email',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.yellow);
+                    }
+                  },
+                  child: Text('Update Email')),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.05,
+              width: MediaQuery.of(context).size.width * 0.3,
+              child: ElevatedButton(
+                  onPressed: () {
+                    controller.updateEmail("${storage.read('email')}");
+                  },
+                  child: Text('View')),
+            ),
             Obx(() {
-              print('STATUS REBUILD');
-              return Text("User Status :${homepageController.status.value}");
-            }),
-            ElevatedButton(
-                onPressed: () {
-                  homepageController.updateStatus("Online!");
-                },
-                child: Text('Login In')),
-            ElevatedButton(
-                onPressed: () {
-                  homepageController.updateStatus("Offline!");
-                },
-                child: Text('Log Out')),
-            Obx(() {
-              return Text(
-                  "Users Count :${homepageController.usersCount.value}");
-            }),
-            ElevatedButton(
-                onPressed: () {
-                  homepageController.addUsers();
-                },
-                child: Text('Add Users')),
+              return Text('Email Address: ${controller.email.value}');
+            })
           ],
         ),
       ),
